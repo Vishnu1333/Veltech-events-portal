@@ -43,7 +43,7 @@ function renderEvents(events, containerId) {
     }
     
     container.innerHTML = events.map(event => `
-        <div class="event-card">
+        <div class="event-card reveal">
             <img src="${event.image_url || 'https://images.unsplash.com/photo-1540575467063-178a50c2df87?auto=format&fit=crop&w=500&q=80'}" alt="${event.title}" class="event-image" onerror="this.src='https://images.unsplash.com/photo-1540575467063-178a50c2df87?auto=format&fit=crop&w=500&q=80'">
             <div class="event-content">
                 <span class="event-category">${event.category}</span>
@@ -57,6 +57,9 @@ function renderEvents(events, containerId) {
             </div>
         </div>
     `).join('');
+    
+    // Re-initialize animations for new cards
+    setTimeout(initScrollAnimations, 50);
 }
 
 // Filter events by category
@@ -299,3 +302,24 @@ async function deleteEvent(id) {
         alert('Server error occurred');
     }
 }
+
+// --- Apple-like Scroll Animations ---
+function initScrollAnimations() {
+    const reveals = document.querySelectorAll('.reveal');
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.classList.add('active');
+                // Optional: Stop observing once revealed to keep it visible
+                observer.unobserve(entry.target);
+            }
+        });
+    }, { threshold: 0.1, rootMargin: "0px 0px -50px 0px" });
+
+    reveals.forEach(reveal => {
+        observer.observe(reveal);
+    });
+}
+
+// Initialize on page load
+document.addEventListener('DOMContentLoaded', initScrollAnimations);
