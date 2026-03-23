@@ -4,6 +4,17 @@ const cors = require('cors');
 const { collection, getDocs, getDoc, doc, addDoc, deleteDoc, updateDoc, query, where, runTransaction } = require('firebase/firestore');
 const { db } = require('./firebase');
 
+const nodemailer = require('nodemailer');
+
+// Configure Email Transporter
+const transporter = nodemailer.createTransport({
+  service: 'gmail',
+  auth: {
+    user: process.env.EMAIL_USER,
+    pass: process.env.EMAIL_PASS
+  }
+});
+
 const app = express();
 app.use(express.json());
 app.use(cors());
@@ -168,9 +179,50 @@ app.post('/api/register', async (req, res) => {
     });
     
     res.status(201).json({ message: 'Registration successful', registration_id });
+    
+    // Attempt sending confirmation email if credentials exist
+    try {
+        if (process.env.EMAIL_USER && process.env.EMAIL_PASS) {
+            const mailOptions = {
+                from: `"Veltech Event Portal" <${process.env.EMAIL_USER}>`,
+                to: email,
+                subject: `Registration Confirmed: ${eventDoc.data().title}`,
+                html: `
+                    <div style="font-family: 'Inter', Arial, sans-serif; max-width: 600px; margin: 0 auto; background: #0a0a0c; color: #f5f5f7; padding: 40px; border-radius: 16px; text-align: center; border: 1px solid rgba(255,255,255,0.1);">
+                        <h2 style="color: #fbbf24; margin-top: 20px; font-size: 28px;">You're in!</h2>
+                        <p style="font-size: 16px;">Hi <strong>${name}</strong>, you have successfully registered for <strong>${eventDoc.data().title}</strong>.</p>
+                        <div style="background: rgba(255,255,255,0.05); padding: 30px; border-radius: 12px; margin: 30px 0; border: 1px dashed rgba(255,255,255,0.2);">
+                            <p style="margin: 0; color: #86868b; text-transform: uppercase; letter-spacing: 2px; font-size: 12px;">Registration ID</p>
+                            <p style="font-size: 32px; font-weight: 800; margin: 10px 0; color: #fbbf24; font-family: monospace;">${registration_id}</p>
+                        </div>
+                        <p style="font-size: 16px;"><strong>Venue:</strong> ${eventDoc.data().location}</p>
+                        <p style="font-size: 16px;"><strong>Date:</strong> ${eventDoc.data().date} at ${eventDoc.data().time.substring(0,5)}</p>
+                        <p style="margin-top: 40px; font-size: 12px; color: #86868b;">Please show this highly secure Registration ID at the venue entrance. See you there!</p>
+                    </div>
+                `
+            };
+            transporter.sendMail(mailOptions).catch(err => console.error("Nodemailer rejection:", err));
+        }
+    } catch(e) { console.error("Email block error", e); }
+    
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: error.message || 'Registration failed' });
+  }
+});
+
+// POST to fetch user tickets
+app.post('/api/tickets', async (req, res) => {
+  const { email } = req.body;
+  if (!email) return res.status(400).json({ error: 'Email required' });
+  try {
+    const q = query(collection(db, "registrations"), where("email", "==", email));
+    const snapshot = await getDocs(q);
+    const tickets = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    res.json(tickets);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Failed to fetch tickets' });
   }
 });
 

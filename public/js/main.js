@@ -26,6 +26,11 @@ async function fetchEvents(limit = 0, containerId = 'events-grid') {
         }
         
         renderEvents(events, containerId);
+        
+        // Initialize Countdown if on home page
+        if (containerId === 'featured-events-grid') {
+            initCountdown(window.allEvents);
+        }
     } catch (error) {
         console.error('Error fetching events:', error);
         container.innerHTML = '<div style="text-align:center;width:100%;color:red;grid-column: 1 / -1;">Failed to load events. Is the backend running?</div>';
@@ -115,6 +120,16 @@ async function loadEventDetails() {
         document.getElementById('d-desc').textContent = event.description;
         
         const registerBtn = document.getElementById('d-register-btn');
+        const calendarBtn = document.getElementById('d-calendar-btn');
+        if (calendarBtn && event.date && event.time) {
+            try {
+                const startObj = new Date(event.date + 'T' + event.time);
+                const endObj = new Date(startObj.getTime() + 2 * 60 * 60 * 1000); // assume 2 hour duration
+                const formatGoogleDate = (d) => d.toISOString().replace(/-|:|\.\d\d\d/g, "");
+                const dates = `${formatGoogleDate(startObj)}/${formatGoogleDate(endObj)}`;
+                calendarBtn.href = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(event.title)}&dates=${dates}&details=${encodeURIComponent(event.description)}&location=${encodeURIComponent(event.location)}`;
+            } catch(e) { console.error("Calendar link error", e); }
+        }
         if (event.available_seats > 0) {
              registerBtn.href = `/register-event.html?id=${event.id}&title=${encodeURIComponent(event.title)}`;
              registerBtn.textContent = 'Register Now';
@@ -303,6 +318,73 @@ async function deleteEvent(id) {
     }
 }
 
+// Analytics Logic
+let deptChartInstance = null;
+let eventChartInstance = null;
+
+async function loadAdminAnalytics() {
+    try {
+        const response = await fetch(`${API_URL}/registrations`);
+        const registrations = await response.json();
+        
+        const deptCounts = {};
+        const eventCounts = {};
+        
+        registrations.forEach(r => {
+            const dept = r.department && r.department.trim() !== '' ? r.department.toUpperCase() : 'General';
+            const eventName = r.event_title || 'Unknown Event';
+            deptCounts[dept] = (deptCounts[dept] || 0) + 1;
+            eventCounts[eventName] = (eventCounts[eventName] || 0) + 1;
+        });
+        
+        // Render Department Pie Chart
+        const ctxDept = document.getElementById('deptChart');
+        if (ctxDept) {
+            if (deptChartInstance) deptChartInstance.destroy();
+            deptChartInstance = new Chart(ctxDept, {
+                type: 'doughnut',
+                data: {
+                    labels: Object.keys(deptCounts),
+                    datasets: [{
+                        data: Object.values(deptCounts),
+                        backgroundColor: ['#fbbf24', '#8b0000', '#3B82F6', '#10b981', '#6366f1'],
+                        borderColor: '#0a0a0c',
+                        borderWidth: 4
+                    }]
+                },
+                options: { plugins: { legend: { labels: { color: '#f5f5f7', font: {family: 'Inter'} } } } }
+            });
+        }
+        
+        // Render Event Bar Chart
+        const ctxEvent = document.getElementById('eventChart');
+        if (ctxEvent) {
+            if (eventChartInstance) eventChartInstance.destroy();
+            eventChartInstance = new Chart(ctxEvent, {
+                type: 'bar',
+                data: {
+                    labels: Object.keys(eventCounts),
+                    datasets: [{
+                        label: 'Total Booked Seats',
+                        data: Object.values(eventCounts),
+                        backgroundColor: '#8b0000',
+                        borderRadius: 6
+                    }]
+                },
+                options: {
+                    scales: {
+                        y: { beginAtZero: true, grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#86868b', font: {family: 'Inter'} } },
+                        x: { grid: { display: false }, ticks: { color: '#86868b', font: {family: 'Inter'} } }
+                    },
+                    plugins: { legend: { labels: { color: '#f5f5f7', font: {family: 'Inter'} } } }
+                }
+            });
+        }
+    } catch (e) {
+        console.error("Failed to load analytics", e);
+    }
+}
+
 // --- Apple-like Scroll Animations ---
 function initScrollAnimations() {
     const reveals = document.querySelectorAll('.reveal');
@@ -323,3 +405,62 @@ function initScrollAnimations() {
 
 // Initialize on page load
 document.addEventListener('DOMContentLoaded', initScrollAnimations);
+
+// --- Live Countdown Engine ---
+let countdownInterval;
+function initCountdown(events) {
+    if (!events || events.length === 0) return;
+    const now = new Date();
+    const upcomingEvents = events.filter(e => new Date(e.date + 'T' + e.time) > now)
+                                .sort((a,b) => new Date(a.date + 'T' + a.time) - new Date(b.date + 'T' + b.time));
+    
+    const container = document.getElementById('hero-countdown');
+    if (!container || upcomingEvents.length === 0) return;
+    
+    const targetEvent = upcomingEvents[0];
+    const eventTime = new Date(targetEvent.date + 'T' + targetEvent.time).getTime();
+    
+    if (countdownInterval) clearInterval(countdownInterval);
+    
+    const titleHtml = `<div style="text-align:center; color: var(--text-secondary); margin-bottom: 1rem; font-size: 0.9rem; letter-spacing: 1px; text-transform: uppercase;">Next Major Event: <strong style="color:var(--text-primary)">${targetEvent.title}</strong></div>`;
+    
+    const renderClock = () => {
+        const currentTime = new Date().getTime();
+        const diff = eventTime - currentTime;
+        
+        if (diff < 0) {
+            clearInterval(countdownInterval);
+            container.innerHTML = titleHtml + `<div style="color:var(--veltech-gold); font-size:1.5rem; font-weight:700; text-align:center;">Event has started!</div>`;
+            return;
+        }
+        
+        const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+        const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+        const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+        const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+        
+        container.innerHTML = titleHtml + `
+            <div style="display:flex; justify-content:center; gap: 1rem; flex-wrap: wrap;">
+                <div class="countdown-box" style="background: var(--glass-bg-card); border: 1px solid var(--glass-border); padding: 1rem; border-radius: 12px; min-width: 80px; text-align:center;">
+                    <span style="display:block; font-size: 2.2rem; font-weight:800; color:var(--veltech-gold); line-height:1; font-variant-numeric: tabular-nums;">${days}</span>
+                    <span style="font-size: 0.75rem; text-transform:uppercase; letter-spacing:1px; color:var(--text-secondary);">Days</span>
+                </div>
+                <div class="countdown-box" style="background: var(--glass-bg-card); border: 1px solid var(--glass-border); padding: 1rem; border-radius: 12px; min-width: 80px; text-align:center;">
+                    <span style="display:block; font-size: 2.2rem; font-weight:800; color:var(--text-primary); line-height:1; font-variant-numeric: tabular-nums;">${hours.toString().padStart(2,'0')}</span>
+                    <span style="font-size: 0.75rem; text-transform:uppercase; letter-spacing:1px; color:var(--text-secondary);">Hours</span>
+                </div>
+                <div class="countdown-box" style="background: var(--glass-bg-card); border: 1px solid var(--glass-border); padding: 1rem; border-radius: 12px; min-width: 80px; text-align:center;">
+                    <span style="display:block; font-size: 2.2rem; font-weight:800; color:var(--text-primary); line-height:1; font-variant-numeric: tabular-nums;">${minutes.toString().padStart(2,'0')}</span>
+                    <span style="font-size: 0.75rem; text-transform:uppercase; letter-spacing:1px; color:var(--text-secondary);">Mins</span>
+                </div>
+                <div class="countdown-box" style="background: var(--glass-bg-card); border: 1px solid var(--glass-border); padding: 1rem; border-radius: 12px; min-width: 80px; text-align:center;">
+                    <span style="display:block; font-size: 2.2rem; font-weight:800; color:var(--veltech-maroon-light); line-height:1; font-variant-numeric: tabular-nums;">${seconds.toString().padStart(2,'0')}</span>
+                    <span style="font-size: 0.75rem; text-transform:uppercase; letter-spacing:1px; color:var(--text-secondary);">Secs</span>
+                </div>
+            </div>
+        `;
+    };
+    
+    renderClock(); // initial render
+    countdownInterval = setInterval(renderClock, 1000);
+}

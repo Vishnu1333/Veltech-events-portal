@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Digital Passes | Veltech Event Portal</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body>
+    <nav class="navbar">
+        <a href="/" class="logo" style="display: flex; align-items: center; gap: 10px;">
+            <img src="/images/logo.png" alt="Veltech Logo" style="height: 40px; width: 40px; border-radius: 50%;">
+            <span>VeltechEvents</span>
+        </a>
+        <ul class="nav-links">
+            <li><a href="/">Home</a></li>
+            <li><a href="/events.html">Events</a></li>
+            <li><a href="/tickets.html" style="color: var(--veltech-gold);">My Tickets</a></li>
+            <li><a href="/login.html">Login</a></li>
+        </ul>
+    </nav>
+
+    <div class="section reveal" style="min-height: 80vh; padding-top: 4rem;">
+        <h2 class="section-title">My Digital Passes</h2>
+        
+        <div class="form-container" id="ticket-form-container">
+            <p style="text-align: center; color: var(--text-secondary); margin-bottom: 2rem;">Enter your registered email below to securely access your event tickets and QR codes.</p>
+            <form id="fetchTicketsForm">
+                <div class="form-group">
+                    <label>Registered Email Address</label>
+                    <input type="email" name="email" required placeholder="student@veltech.edu.in" style="font-size: 1.1rem; padding: 1.2rem;">
+                </div>
+                <button type="submit" class="btn btn-primary" style="width: 100%; border-radius: 12px; font-size: 1.1rem;">Retrieve My Tickets</button>
+            </form>
+        </div>
+
+        <div id="tickets-grid" class="events-grid reveal-container" style="margin-top: 4rem; display: none;">
+            <!-- Tickets injected here -->
+        </div>
+    </div>
+
+    <footer>
+        <p>&copy; 2026 Veltech University Event Portal.</p>
+    </footer>
+
+    <script src="/js/main.js"></script>
+    <script>
+        document.getElementById('fetchTicketsForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = e.target.email.value;
+            const grid = document.getElementById('tickets-grid');
+            
+            grid.style.display = 'grid';
+            grid.innerHTML = '<div style="text-align:center;grid-column:1/-1; color: var(--text-secondary);">Locating your secure passes...</div>';
+            
+            try {
+                const res = await fetch('/api/tickets', {
+                    method: 'POST', 
+                    headers: { 'Content-Type': 'application/json' }, 
+                    body: JSON.stringify({ email })
+                });
+                const tickets = await res.json();
+                
+                if(tickets.length === 0) {
+                    grid.innerHTML = '<div style="text-align:center;grid-column:1/-1;color:var(--veltech-gold);font-size:1.2rem;">No passes found for this email address.</div>';
+                    return;
+                }
+                
+                grid.innerHTML = tickets.map((t, index) => `
+                    <div class="event-card reveal" style="border-top: 6px solid var(--veltech-maroon); position: relative; padding-bottom: 1.5rem; transition-delay: ${index * 0.1}s;">
+                        <div class="event-content" style="padding-bottom: 0;">
+                            <div style="display:flex; justify-content: space-between; align-items:flex-start;">
+                                <div>
+                                    <span style="font-size: 0.75rem; color: var(--veltech-gold); text-transform: uppercase; letter-spacing: 2px; font-weight: 700;">Digital Pass</span>
+                                    <h3 class="event-title" style="font-size: 1.6rem; margin-top: 0.5rem; line-height: 1.2;">${t.event_title}</h3>
+                                </div>
+                            </div>
+                            
+                            <div style="margin-top: 2rem; background: rgba(0,0,0,0.3); padding: 1.2rem; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05);">
+                                <p style="margin-bottom: 0.3rem; color: var(--text-secondary); font-size: 0.75rem; letter-spacing: 1px;">ATTENDEE</p>
+                                <p style="font-weight: 600; color: var(--text-primary); font-size: 1.2rem; text-transform: uppercase; letter-spacing: 1px;">${t.name}</p>
+                            </div>
+                        </div>
+                        
+                        <div style="border-top: 2px dashed rgba(255,255,255,0.15); margin: 2rem 0 1.5rem 0; position: relative;">
+                            <div style="position: absolute; left: -10px; top: -10px; width: 20px; height: 20px; background: var(--bg-surface); border-radius: 50%; border-right: 1px solid var(--glass-border);"></div>
+                            <div style="position: absolute; right: -10px; top: -10px; width: 20px; height: 20px; background: var(--bg-surface); border-radius: 50%; border-left: 1px solid var(--glass-border);"></div>
+                        </div>
+                        
+                        <div style="padding: 0 2rem; display: flex; justify-content: space-between; align-items: flex-end;">
+                            <div>
+                                <p style="font-size: 0.75rem; color: var(--text-secondary); letter-spacing: 1px; margin-bottom: 0.3rem;">REGISTRATION ID</p>
+                                <p style="font-family: monospace; font-weight: 700; font-size: 1.3rem; color: var(--veltech-gold); letter-spacing: 1px;">${t.registration_id}</p>
+                            </div>
+                            <i class="fas fa-qrcode" style="font-size: 3.5rem; color: rgba(255,255,255,0.9);"></i>
+                        </div>
+                    </div>
+                `).join('');
+                
+                // Trigger visibility
+                setTimeout(() => {
+                    document.querySelectorAll('#tickets-grid .reveal').forEach(el => el.classList.add('active'));
+                }, 50);
+
+            } catch(err) {
+                grid.innerHTML = '<div style="text-align:center;grid-column:1/-1;color:red;">Error connecting to the ticketing system.</div>';
+            }
+        });
+    </script>
+</body>
+</html>
