@@ -35,7 +35,7 @@
 }
 
 body {
-  background: linear-gradient(135deg, rgba(10, 10, 12, 0.95) 0%, rgba(139, 0, 0, 0.7) 100%), url('/images/bg.jpg') center/cover fixed no-repeat;
+  background-color: var(--bg-dark);
   color: var(--text-primary);
   line-height: 1.5;
   display: flex;
@@ -130,7 +130,7 @@ body {
   align-items: center;
   justify-content: center;
   text-align: center;
-  /* Background inherited from body for continuous heavy graphics */
+  background: linear-gradient(to bottom, rgba(0, 0, 0, 0.4) 0%, var(--bg-dark) 100%), url('/images/bg.jpg') center/cover no-repeat;
   padding: 0 20px;
   position: relative;
   overflow: hidden;
@@ -218,7 +218,7 @@ body {
 /* Section Shared */
 .section {
   padding: 6rem 5%;
-  background: transparent;
+  background: var(--bg-surface);
 }
 
 .section-title {
