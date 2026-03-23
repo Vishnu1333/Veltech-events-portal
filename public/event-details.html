@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Event Details | Veltech Event Portal</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="/css/styles.css">
+    <style>
+        .details-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: var(--white);
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: var(--shadow-lg);
+        }
+        .details-image {
+            width: 100%;
+            height: 350px;
+            object-fit: cover;
+            background-color: #ddd;
+        }
+        .details-content {
+            padding: 2.5rem;
+        }
+        .details-title {
+            font-size: 2rem;
+            color: var(--primary-blue);
+            margin-bottom: 1rem;
+        }
+        .details-meta-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+            background: var(--light-gray);
+            padding: 1.5rem;
+            border-radius: 8px;
+        }
+        .meta-item {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        .meta-item i {
+            font-size: 1.5rem;
+            color: var(--secondary-blue);
+        }
+        .details-desc {
+            margin-bottom: 2rem;
+            line-height: 1.8;
+            color: var(--dark-text);
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <a href="/" class="logo">VeltechEvents</a>
+        <ul class="nav-links">
+            <li><a href="/">Home</a></li>
+            <li><a href="/events.html">Events</a></li>
+            <li><a href="/login.html">Login</a></li>
+            <li><a href="/admin.html" class="nav-cta">Admin</a></li>
+        </ul>
+    </nav>
+
+    <div class="section" style="padding-top: 2rem; flex-grow: 1;">
+        <div id="loading" style="text-align: center;">Loading event details...</div>
+        <div id="details-container" class="details-container" style="display: none;">
+            <img id="d-image" src="" alt="Event Image" class="details-image" onerror="this.src='https://via.placeholder.com/800x400?text=No+Image'">
+            <div class="details-content">
+                <span id="d-category" class="event-category">Category</span>
+                <h1 id="d-title" class="details-title">Event Title</h1>
+                
+                <div class="details-meta-grid">
+                    <div class="meta-item">
+                        <i class="far fa-calendar-alt"></i>
+                        <div>
+                            <strong>Date & Time</strong>
+                            <div id="d-datetime">Date, Time</div>
+                        </div>
+                    </div>
+                    <div class="meta-item">
+                        <i class="fas fa-map-marker-alt"></i>
+                        <div>
+                            <strong>Location</strong>
+                            <div id="d-location">Venue</div>
+                        </div>
+                    </div>
+                    <div class="meta-item">
+                        <i class="fas fa-user-tie"></i>
+                        <div>
+                            <strong>Speaker</strong>
+                            <div id="d-speaker">Speaker Name</div>
+                        </div>
+                    </div>
+                    <div class="meta-item">
+                        <i class="fas fa-users"></i>
+                        <div>
+                            <strong>Seats Available</strong>
+                            <div id="d-seats">0 / 0</div>
+                        </div>
+                    </div>
+                </div>
+
+                <h3>About this Event</h3>
+                <p id="d-desc" class="details-desc">Description</p>
+                
+                <a href="#" id="d-register-btn" class="btn btn-primary" style="width: 100%; text-align: center; font-size: 1.1rem; padding: 1rem;">Register Now</a>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <p>&copy; 2026 Veltech University Event Portal.</p>
+    </footer>
+
+    <script src="/js/main.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            if (typeof loadEventDetails === 'function') {
+                loadEventDetails();
+            }
+        });
+    </script>
+</body>
+</html>

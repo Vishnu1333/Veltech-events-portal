@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register | Veltech Event Portal</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body>
+    <nav class="navbar">
+        <a href="/" class="logo">VeltechEvents</a>
+        <ul class="nav-links">
+            <li><a href="/">Home</a></li>
+            <li><a href="/events.html">Events</a></li>
+            <li><a href="/login.html">Login</a></li>
+            <li><a href="/admin.html" class="nav-cta">Admin</a></li>
+        </ul>
+    </nav>
+
+    <div class="section" style="padding-top: 2rem; flex-grow: 1;">
+        <h2 class="section-title">Event Registration</h2>
+        
+        <div class="form-container">
+            <div id="register-alert" class="alert"></div>
+            
+            <h3 id="register-event-title" style="margin-bottom: 1.5rem; color: var(--secondary-blue); text-align: center;"></h3>
+            
+            <form id="registrationForm">
+                <input type="hidden" id="event_id" name="event_id">
+                
+                <div class="form-group">
+                    <label for="name">Full Name *</label>
+                    <input type="text" id="name" name="name" required placeholder="John Doe">
+                </div>
+                
+                <div class="form-group">
+                    <label for="email">Student Email *</label>
+                    <input type="email" id="email" name="email" required placeholder="student@veltech.edu.in">
+                </div>
+                
+                <div class="form-group">
+                    <label for="phone">Phone Number</label>
+                    <input type="tel" id="phone" name="phone" placeholder="9876543210">
+                </div>
+                
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                    <div class="form-group">
+                        <label for="department">Department</label>
+                        <select id="department" name="department">
+                            <option value="">Select Department</option>
+                            <option value="CSE">CSE</option>
+                            <option value="ECE">ECE</option>
+                            <option value="MECH">MECH</option>
+                            <option value="CIVIL">CIVIL</option>
+                            <option value="IT">IT</option>
+                            <option value="Other">Other</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="year">Year of Study</label>
+                        <select id="year" name="year">
+                            <option value="">Select Year</option>
+                            <option value="1">1st Year</option>
+                            <option value="2">2nd Year</option>
+                            <option value="3">3rd Year</option>
+                            <option value="4">4th Year</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <button type="submit" class="btn btn-primary" style="width: 100%; border-radius: 6px;">Submit Registration</button>
+            </form>
+        </div>
+    </div>
+
+    <footer>
+        <p>&copy; 2026 Veltech University Event Portal.</p>
+    </footer>
+
+    <script src="/js/main.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const params = new URLSearchParams(window.location.search);
+            const eventId = params.get('id');
+            const eventTitle = params.get('title');
+            
+            if (eventId) {
+                document.getElementById('event_id').value = eventId;
+            }
+            if (eventTitle) {
+                document.getElementById('register-event-title').textContent = `Registering for: ${decodeURIComponent(eventTitle)}`;
+            } else {
+                 document.getElementById('register-event-title').textContent = "Please select an event from the Events page first.";
+                 document.querySelector('button[type="submit"]').disabled = true;
+            }
+
+            document.getElementById('registrationForm').addEventListener('submit', handleRegistration);
+        });
+    </script>
+</body>
+</html>

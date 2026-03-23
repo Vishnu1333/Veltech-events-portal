@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Veltech Event Portal | Home</title>
+    <meta name="description" content="Discover, Register, and Participate in Campus Events at Veltech University.">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body>
+    <nav class="navbar">
+        <a href="/" class="logo">VeltechEvents</a>
+        <ul class="nav-links">
+            <li><a href="/">Home</a></li>
+            <li><a href="/events.html">Events</a></li>
+            <li><a href="/login.html">Login</a></li>
+            <li><a href="/admin.html" class="nav-cta">Admin</a></li>
+        </ul>
+    </nav>
+
+    <header class="hero">
+        <div class="hero-content">
+            <h1>Veltech Campus Event Portal</h1>
+            <p>Discover, Register, and Participate in exciting Campus Events</p>
+            <div class="btn-group">
+                <a href="/events.html" class="btn btn-outline">View Events</a>
+                <a href="/events.html" class="btn btn-primary">Register Now</a>
+            </div>
+        </div>
+    </header>
+
+    <section class="section" id="featured-events-section">
+        <h2 class="section-title">Upcoming Events</h2>
+        <div class="events-grid" id="featured-events-grid">
+            <!-- Events will be dynamically injected here using JS -->
+        </div>
+        <div style="text-align: center; margin-top: 3rem;">
+            <a href="/events.html" class="btn btn-outline" style="color: var(--primary-blue); border-color: var(--primary-blue);">View All Events</a>
+        </div>
+    </section>
+
+    <footer>
+        <p>&copy; 2026 Veltech University Event Portal. All Rights Reserved.</p>
+    </footer>
+
+    <script src="/js/main.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            if (typeof fetchEvents === 'function') {
+                fetchEvents(3, 'featured-events-grid');
+            }
+        });
+    </script>
+</body>
+</html>

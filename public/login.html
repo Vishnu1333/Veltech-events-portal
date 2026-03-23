@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login | Veltech Event Portal</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body>
+    <nav class="navbar">
+        <a href="/" class="logo">VeltechEvents</a>
+        <ul class="nav-links">
+            <li><a href="/">Home</a></li>
+            <li><a href="/events.html">Events</a></li>
+            <li><a href="/login.html">Login</a></li>
+            <li><a href="/admin.html" class="nav-cta">Admin</a></li>
+        </ul>
+    </nav>
+
+    <div class="section" style="padding-top: 5rem; flex-grow: 1;">
+        <div class="form-container" style="max-width: 400px;">
+            <h2 class="section-title" style="margin-bottom: 2rem; font-size: 2rem;">Welcome Back</h2>
+            
+            <div id="login-alert" class="alert"></div>
+            
+            <form id="loginForm">
+                <div class="form-group">
+                    <label for="email">Email</label>
+                    <input type="email" id="email" name="email" required placeholder="admin@veltech.edu.in">
+                </div>
+                
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <input type="password" id="password" name="password" required placeholder="********">
+                </div>
+                
+                <button type="submit" class="btn btn-primary" style="width: 100%; border-radius: 6px;">Login</button>
+            </form>
+            <p style="text-align: center; margin-top: 1rem; font-size: 0.9rem; color: var(--gray-text);">Use 'admin' role credentials to access the dashboard.</p>
+        </div>
+    </div>
+
+    <footer>
+        <p>&copy; 2026 Veltech University Event Portal.</p>
+    </footer>
+
+    <script src="/js/main.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            if(typeof handleLogin === 'function'){
+                 document.getElementById('loginForm').addEventListener('submit', handleLogin);
+            }
+        });
+    </script>
+</body>
+</html>

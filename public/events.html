@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Events | Veltech Event Portal</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="/css/styles.css">
+    <style>
+        .filters {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+        }
+        .filter-btn {
+            padding: 0.5rem 1.5rem;
+            border: 1px solid var(--primary-blue);
+            background: transparent;
+            color: var(--primary-blue);
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: 500;
+        }
+        .filter-btn.active, .filter-btn:hover {
+            background: var(--primary-blue);
+            color: var(--white);
+        }
+        .search-bar {
+            width: 100%;
+            max-width: 500px;
+            margin: 0 auto 2rem;
+            display: flex;
+        }
+        .search-bar input {
+            flex: 1;
+            padding: 0.8rem;
+            border: 1px solid #d1d5db;
+            border-radius: 6px 0 0 6px;
+            font-size: 1rem;
+            outline: none;
+        }
+        .search-bar input:focus {
+            border-color: var(--primary-blue);
+        }
+        .search-bar button {
+            padding: 0.8rem 1.5rem;
+            background: var(--primary-blue);
+            color: white;
+            border: none;
+            border-radius: 0 6px 6px 0;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        .search-bar button:hover {
+            background: var(--secondary-blue);
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <a href="/" class="logo">VeltechEvents</a>
+        <ul class="nav-links">
+            <li><a href="/">Home</a></li>
+            <li><a href="/events.html">Events</a></li>
+            <li><a href="/login.html">Login</a></li>
+            <li><a href="/admin.html" class="nav-cta">Admin</a></li>
+        </ul>
+    </nav>
+
+    <div class="section" style="padding-top: 2rem; flex-grow: 1;">
+        <h2 class="section-title">All Campus Events</h2>
+        
+        <div class="search-bar">
+            <input type="text" id="searchInput" placeholder="Search events by name...">
+            <button onclick="handleSearch()"><i class="fas fa-search"></i></button>
+        </div>
+
+        <div class="filters">
+            <button class="filter-btn active" data-category="all">All</button>
+            <button class="filter-btn" data-category="Technical">Technical</button>
+            <button class="filter-btn" data-category="Cultural">Cultural</button>
+            <button class="filter-btn" data-category="Sports">Sports</button>
+        </div>
+
+        <div class="events-grid" id="events-grid">
+            <!-- Events injected dynamically -->
+        </div>
+    </div>
+
+    <footer>
+        <p>&copy; 2026 Veltech University Event Portal.</p>
+    </footer>
+
+    <script src="/js/main.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            if (typeof fetchEvents === 'function') {
+                fetchEvents(0, 'events-grid');
+            }
+
+            // Setup filters
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+                    e.target.classList.add('active');
+                    filterEvents(e.target.dataset.category);
+                });
+            });
+
+            // Setup search searchInput event
+            document.getElementById('searchInput').addEventListener('input', (e) => {
+                if(typeof searchEvents === 'function'){
+                    searchEvents(e.target.value);
+                }
+            });
+        });
+    </script>
+</body>
+</html>
